@@ -7,6 +7,8 @@ dataset1 = pd.read_csv('train.csv')
 print('Total products in dataset:',dataset1['Upc'].nunique())
 print('Total transactions in dataset:',dataset1['VisitNumber'].nunique())
 print('Total Departments in walmart:',dataset1['DepartmentDescription'].nunique())
+print('Total trip types:',dataset1['TripType'].nunique())
+
 
 col = ['VisitNumber','Upc']
 dataset2 = dataset1[col]
@@ -26,3 +28,16 @@ for item in association_results:
     print("Confidence: " + str(item[2][0][2]))
     print("Lift: " + str(item[2][0][3]))
     print("=====================================")
+    
+
+#deletes rows which have description as 'Discount'
+for index, row in dataset1.iterrows():
+    if row['Description'] == 'Discount':
+        dataset1.drop(index,inplace =True)
+    elif row.IsNull('Description'):
+        print(row['InvoiceNo'])
+
+for index, row in dataset1.iterrows():
+    if row['Description'] == DBNull.Value:
+        print(row['InvoiceNo'])
+
