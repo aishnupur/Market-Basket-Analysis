@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 train_data <- read.csv('train.csv')
 test_data <- read.csv('test.csv')
 
@@ -28,7 +27,7 @@ confusionMatrix(cm_nb)
 ####################################DECISION TREE#########################################
 library(rpart)
 classifier_dt = rpart(formula = TripType~.,
-                   data = training_set2)
+                      data = training_set2)
 pred_dt = predict(classifier_dt,test_set2)
 cm_dt = table(test_set1[,1], pred_dt)
 cm_dt
@@ -63,6 +62,3 @@ cm_xg = table(test_set1[,1], predicted.labels_XGB)
 
 library(caret)
 confusionMatrix(cm_xg)
-=======
-tapan is mad
->>>>>>> 93530cda0463ef50f2e682821722d2a5932e197f
