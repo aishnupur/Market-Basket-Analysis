@@ -1,5 +1,5 @@
-##Shrey Gupta File
-##Shrey code
+##This is the project file for Data mining
+##Authors: Shrey, Tapan, Aishwarya
 train_data <- read.csv('train.csv')
 test_data <- read.csv('test.csv')
 
