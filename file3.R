@@ -3,6 +3,13 @@ test_data <- read.csv('test.csv')
 
 train_data.factor <- factor(train_data$TripType)
 train_data$TripType <- as.numeric(train_data.factor)
+train_data$TripType <- train_data$TripType - 1
+
+#############################DATA PREPROCESSING#########################################
+
+
+
+#############################DATA SPLITTING#############################################
 
 library(caTools)
 set.seed(123)
@@ -48,17 +55,43 @@ dtrain <- xgb.DMatrix(data = as.matrix(training_set2), label = training_set2$Tri
 
 classifier_xg = xgboost(data = dtrain,
                         max.depth = 10, 
-                        eta = 1, nthread = 4, nrounds = 4,verbose = 1)
+                        eta = 1, nthread = 4, nrounds = 4,verbose = 1,
+                        objective = "multi:softprob",
+                        eval_metric = "mlogloss",
+                        num_class = 38)
 pred_xg = predict(classifier_xg,data.matrix(test_set1[,2:7]))
 
-xgbModel <- xgboost(data = data.matrix(training_set2[,2:7]), label = data.matrix(training_set2[,1]), max_depth = 10, eta = 1, nthread = 4, nrounds = 4,
-                    objective = "multi:softprob",
+xgbModel <- xgbnoost(data = data.matrix(training_set2[,2:7]), label = data.matrix(training_set2[,1]),
+                    max_depth = 80,
+                    eta = 1, nthread = 8, nrounds = 1,
+                    objective = "multi:softmax",
                     eval_metric = "mlogloss",
                     num_class = 38)
-#max_depth = 2, eta = 1, verbose = 2
 
 predicted.labels_XGB <- predict(xgbModel, data.matrix(test_set2))
+
 cm_xg = table(test_set1[,1], predicted.labels_XGB)
 
 library(caret)
 confusionMatrix(cm_xg)
+
+
+
+###############################################################################
+#install.packages('R6')
+library(R6)
+xgb_trainer <- XGBTrainer$new()
+gst <-GridSearchCV$new(trainer = xgb_trainer,
+                       parameters = list(n_estimators = c(100),
+                                         max_depth = c(5,2,10,50,60,80,100),
+                                         eta = 1, nthread = 8, nrounds = c(1,2,3)),
+                       n_folds = 3,
+                       scoring = c('accuracy','rmse'))
+data("iris")
+gst$fit(iris, "Species")
+gst$best_iteration()
+
+xgb.grid <- expand.grid(max_depth = c(5,2,10,50,60,80,100),
+                        eta = 1, nthread = 8, nrounds = c(1,2,3),
+                        scoring = c('accuracy','rmse')
+)
