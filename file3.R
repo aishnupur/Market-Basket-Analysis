@@ -4,10 +4,18 @@ test_data <- read.csv('test.csv')
 train_data.factor <- factor(train_data$TripType)
 train_data$TripType <- as.numeric(train_data.factor)
 train_data$TripType <- train_data$TripType - 1
+train_data$TripType <- factor(train_data$TripType)
 
 #############################DATA PREPROCESSING#########################################
 
+sum(is.na(train_data$FinelineNumber))
+row.has.na <- apply(train_data, 1, function(x){any(is.na(x))})
+sum(row.has.na)
+train_data <- train_data[!row.has.na,]
 
+rownames(train_data) <- seq(length=nrow(train_data))
+
+summary(train_data)
 
 #############################DATA SPLITTING#############################################
 
@@ -17,6 +25,11 @@ split = sample.split(train_data$TripType, SplitRatio = 0.80)
 training_set2 = subset(train_data, split == TRUE)
 test_set1 = subset(train_data, split == FALSE)
 test_set2 <- test_set1[,2:7]
+
+rownames(training_set2) <- seq(length=nrow(training_set2))
+rownames(test_set1) <- seq(length=nrow(test_set1))
+rownames(test_set2) <- seq(length=nrow(test_set2))
+
 
 ####################################NAIVE BAYES#########################################
 library(e1071)
@@ -31,7 +44,13 @@ cm_nb
 library(caret)
 confusionMatrix(cm_nb)
 
+
+##################################SVM####################################################
+
+
+
 ####################################DECISION TREE#########################################
+
 library(rpart)
 classifier_dt = rpart(formula = TripType~.,
                       data = training_set2)
