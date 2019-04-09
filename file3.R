@@ -1,7 +1,5 @@
-
-train_data <- read.csv('D:\\WayneStateUniversity\\Semester2\\DataMining\\Project_Walmart\\train.csv')
-test_data <- read.csv('D:\\WayneStateUniversity\\Semester2\\DataMining\\Project_Walmart\\test.csv')
-
+train_data <- read.csv('train.csv')
+test_data <- read.csv('test.csv')
 
 train_data.factor <- factor(train_data$TripType)
 train_data$TripType <- as.numeric(train_data.factor)
@@ -43,8 +41,8 @@ table_weekday <- table(train_data$Weekday)
 labels_weekday <- paste(names(table_weekday), "\n", table_weekday, sep="")
 pie3D(table_weekday, labels = labels_weekday, main="Pie Chart of Departments")
 
-
-
+neg_rows <- subset(train_data, ScanCount  < 0)
+barplot(table(neg_rows$DepartmentDescription), las=2)
 ###################APRIOIRI ALGORITHM###################
 library(arulesCBA)
 rules <- aprioiri(train_data$TripType, parameter = list(support = 0.005, confidence = 0.25))
