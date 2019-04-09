@@ -1,7 +1,7 @@
-##This is the project file for Data mining
-##Authors: Shrey, Tapan, Aishwarya
-train_data <- read.csv('train.csv')
-test_data <- read.csv('test.csv')
+
+train_data <- read.csv('D:\\WayneStateUniversity\\Semester2\\DataMining\\Project_Walmart\\train.csv')
+test_data <- read.csv('D:\\WayneStateUniversity\\Semester2\\DataMining\\Project_Walmart\\test.csv')
+
 
 train_data.factor <- factor(train_data$TripType)
 train_data$TripType <- as.numeric(train_data.factor)
@@ -18,6 +18,36 @@ train_data <- train_data[!row.has.na,]
 rownames(train_data) <- seq(length=nrow(train_data))
 
 summary(train_data)
+
+###########################DATA ANALYSIS###############################################
+library(ggplot2)
+
+###BAR PLOTS#####
+
+##Visit Number
+ggplot(train_data, aes(VisitNumber)) +
+  geom_bar(fill = "#0073C2FF") 
+
+##Trip Type
+barplot(table(train_data$TripType), las=2)
+
+##Department Description
+barplot(table(train_data$DepartmentDescription), las=2)
+
+#Scan count
+barplot(table(train_data$ScanCount), las=2)
+
+###PIE CHART#####
+library(plotrix)
+table_weekday <- table(train_data$Weekday)
+labels_weekday <- paste(names(table_weekday), "\n", table_weekday, sep="")
+pie3D(table_weekday, labels = labels_weekday, main="Pie Chart of Departments")
+
+
+
+###################APRIOIRI ALGORITHM###################
+library(arulesCBA)
+rules <- aprioiri(train_data$TripType, parameter = list(support = 0.005, confidence = 0.25))
 
 #############################DATA SPLITTING#############################################
 
