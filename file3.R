@@ -19,6 +19,7 @@ summary(train_data)
 
 train_data <- train_data[,-c(5,7)]
 test_data <- test_data[,-c(4,6)]
+
 ###########################ONE HOT ENCODING###############################################
 
 library(mltools)
