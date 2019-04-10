@@ -31,31 +31,31 @@ train_data_1h <- data.frame(train_data[,2:5], trip_type_1h[,1:38])
 
 ###########################DATA ANALYSIS###############################################
 
-# library(ggplot2)
-# 
-# ###BAR PLOTS#####
-# 
-# ##Visit Number
-# ggplot(train_data, aes(VisitNumber)) +
-#   geom_bar(fill = "#0073C2FF") 
-# 
-# ##Trip Type
-# barplot(table(train_data$TripType), las=2)
-# 
-# ##Department Description
-# barplot(table(train_data$DepartmentDescription), las=2)
-# 
-# #Scan count
-# barplot(table(train_data$ScanCount), las=2)
-# 
-# ###PIE CHART#####
-# library(plotrix)
-# table_weekday <- table(train_data$Weekday)
-# labels_weekday <- paste(names(table_weekday), "\n", table_weekday, sep="")
-# pie3D(table_weekday, labels = labels_weekday, main="Pie Chart of Departments")
-# 
-# neg_rows <- subset(train_data, ScanCount  < 0)
-# barplot(table(neg_rows$DepartmentDescription), las=2)
+library(ggplot2)
+
+###BAR PLOTS#####
+
+##Visit Number
+ggplot(train_data, aes(VisitNumber)) +
+  geom_bar(fill = "#0073C2FF")
+
+##Trip Type
+barplot(table(train_data$TripType), las=2)
+
+##Department Description
+barplot(table(train_data$DepartmentDescription), las=2)
+
+#Scan count
+barplot(table(train_data$ScanCount), las=2)
+
+###PIE CHART#####
+library(plotrix)
+table_weekday <- table(train_data$Weekday)
+labels_weekday <- paste(names(table_weekday), "\n", table_weekday, sep="")
+pie3D(table_weekday, labels = labels_weekday, main="Pie Chart of Departments")
+
+neg_rows <- subset(train_data, ScanCount  < 0)
+barplot(table(neg_rows$DepartmentDescription), las=2)
 
 #############################DATA SPLITTING#############################################
 
