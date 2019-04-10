@@ -17,35 +17,45 @@ rownames(train_data) <- seq(length=nrow(train_data))
 
 summary(train_data)
 
+train_data <- train_data[,-c(5,7)]
+test_data <- test_data[,-c(4,6)]
+###########################ONE HOT ENCODING###############################################
+
+library(mltools)
+library(data.table)
+
+trip_type_1h <- one_hot(as.data.table(train_data$TripType))
+as.data.frame(trip_type_1h)
+
+train_data_1h <- data.frame(train_data[,2:5], trip_type_1h[,1:38])
+
 ###########################DATA ANALYSIS###############################################
-library(ggplot2)
 
-###BAR PLOTS#####
-
-##Visit Number
-ggplot(train_data, aes(VisitNumber)) +
-  geom_bar(fill = "#0073C2FF") 
-
-##Trip Type
-barplot(table(train_data$TripType), las=2)
-
-##Department Description
-barplot(table(train_data$DepartmentDescription), las=2)
-
-#Scan count
-barplot(table(train_data$ScanCount), las=2)
-
-###PIE CHART#####
-library(plotrix)
-table_weekday <- table(train_data$Weekday)
-labels_weekday <- paste(names(table_weekday), "\n", table_weekday, sep="")
-pie3D(table_weekday, labels = labels_weekday, main="Pie Chart of Departments")
-
-neg_rows <- subset(train_data, ScanCount  < 0)
-barplot(table(neg_rows$DepartmentDescription), las=2)
-###################APRIOIRI ALGORITHM###################
-library(arulesCBA)
-rules <- aprioiri(train_data$TripType, parameter = list(support = 0.005, confidence = 0.25))
+# library(ggplot2)
+# 
+# ###BAR PLOTS#####
+# 
+# ##Visit Number
+# ggplot(train_data, aes(VisitNumber)) +
+#   geom_bar(fill = "#0073C2FF") 
+# 
+# ##Trip Type
+# barplot(table(train_data$TripType), las=2)
+# 
+# ##Department Description
+# barplot(table(train_data$DepartmentDescription), las=2)
+# 
+# #Scan count
+# barplot(table(train_data$ScanCount), las=2)
+# 
+# ###PIE CHART#####
+# library(plotrix)
+# table_weekday <- table(train_data$Weekday)
+# labels_weekday <- paste(names(table_weekday), "\n", table_weekday, sep="")
+# pie3D(table_weekday, labels = labels_weekday, main="Pie Chart of Departments")
+# 
+# neg_rows <- subset(train_data, ScanCount  < 0)
+# barplot(table(neg_rows$DepartmentDescription), las=2)
 
 #############################DATA SPLITTING#############################################
 
@@ -54,14 +64,48 @@ set.seed(123)
 split = sample.split(train_data$TripType, SplitRatio = 0.80)
 training_set2 = subset(train_data, split == TRUE)
 test_set1 = subset(train_data, split == FALSE)
-test_set2 <- test_set1[,2:7]
+test_set2 <- test_set1[,2:5]
 
 rownames(training_set2) <- seq(length=nrow(training_set2))
 rownames(test_set1) <- seq(length=nrow(test_set1))
 rownames(test_set2) <- seq(length=nrow(test_set2))
 
+#############################DATA SPLITTING WITH 1 H#############################################
+
+library(caTools)
+set.seed(123)
+split_1h = sample.split(train_data_1h[5:42], SplitRatio = 0.80)
+dplyr::filter(train_data_1h)
+training_set2_1h = subset(train_data_1h, split == TRUE)
+test_set1_1h = subset(train_data_1h, split == FALSE)
+
+rownames(training_set2) <- seq(length=nrow(training_set2))
+rownames(test_set1) <- seq(length=nrow(test_set1))
+rownames(test_set2) <- seq(length=nrow(test_set2))
+
+#############################XGBOOST WITH 1 H#############################################
+
+xgbModel_1h <- xgboost(data = data.matrix(training_set2[,2:5]), 
+                       label = data.matrix(training_set2[,1]),
+                       max_depth = 80,
+                       eta = 1, nthread = 8, nrounds = 1,
+                       objective = "multi:softmax",
+                       eval_metric = "mlogloss",
+                       num_class = 38)
+
+predicted.labels_XGB <- predict(xgbModel, data.matrix(test_set2))
+
+cm_xg = table(test_set1[,1], predicted.labels_XGB)
+
+library(caret)
+confusionMatrix(cm_xg)
+
 
 ####################################NAIVE BAYES#########################################
+
+training_set2 <- training_set2[,-c(5,7)]
+ 
+
 library(e1071)
 classifier_nb = naiveBayes(TripType~.,
                            data = training_set2)
@@ -96,26 +140,30 @@ confusionMatrix(cm_dt)
 #install.packages("xgboost")
 library(xgboost)
 
-training_set2[] <- lapply(training_set2, function(x) {
-  if(is.factor(x)) as.numeric(as.character(x)) else x
-})
+# training_set2[] <- lapply(training_set2, function(x) {
+#   if(is.factor(x)) as.numeric(as.character(x)) else x
+# })
+# 
+# dtrain <- xgb.DMatrix(data = as.matrix(training_set2), label = training_set2$TripType)
+# 
+# classifier_xg = xgboost(data = dtrain,
+#                         max.depth = 10, 
+#                         eta = 1, nthread = 4, nrounds = 4,verbose = 1,
+#                         objective = "multi:softprob",
+#                         eval_metric = "mlogloss",
+#                         num_class = 38)
+# pred_xg = predict(classifier_xg,data.matrix(test_set1[,2:6]))
 
-dtrain <- xgb.DMatrix(data = as.matrix(training_set2), label = training_set2$TripType)
-
-classifier_xg = xgboost(data = dtrain,
-                        max.depth = 10, 
-                        eta = 1, nthread = 4, nrounds = 4,verbose = 1,
-                        objective = "multi:softprob",
-                        eval_metric = "mlogloss",
-                        num_class = 38)
-pred_xg = predict(classifier_xg,data.matrix(test_set1[,2:7]))
-
-xgbModel <- xgbnoost(data = data.matrix(training_set2[,2:7]), label = data.matrix(training_set2[,1]),
-                    max_depth = 80,
-                    eta = 1, nthread = 8, nrounds = 1,
+xgbModel <- xgboost(data = data.matrix(training_set2[,2:5]), 
+                    label = data.matrix(training_set2[,1]),
+                    max_depth = 12,
+                    eta = 1, nthread = 8, nrounds = 300,
                     objective = "multi:softmax",
                     eval_metric = "mlogloss",
-                    num_class = 38)
+                    num_class = 38,
+                    eta = 0.1,
+                    early_stopping_rounds = 10,
+                    min_child_weight = 3)
 
 predicted.labels_XGB <- predict(xgbModel, data.matrix(test_set2))
 

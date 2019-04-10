@@ -7,11 +7,11 @@ import scipy
 import sklearn
 
 
-data = pd.read_csv("C:/Users/sandh/OneDrive/Documents/R/traincsv/train.csv")
-data_original = pd.read_csv("C:/Users/sandh/OneDrive/Documents/R/traincsv/train.csv")
+data = pd.read_csv("train.csv")
+data_original = pd.read_csv("train.csv")
 #i want two copies available in case one gets altered by accident
 
-w_test_data = pd.read_csv("C:/Users/sandh/OneDrive/Documents/R/testcsv/test.csv")
+w_test_data = pd.read_csv("test.csv")
 
 sample_submission = pd.read_csv("C:/Users/sandh/OneDrive/Documents/R/sample_submission.csv/sample_submission.csv")
 
@@ -231,7 +231,7 @@ features = ["Weekday", "NumItems", "Return", 'CategoryCounts', 'ACCESSORIES',
 
 
 
-
+from sklearn.cross_validation import train_test_split
 mytrain, mytest = train_test_split(data, test_size = .4)
 mytrain.TripType = mytrain.TripType.astype(float)
 mytrain.Weekday = mytrain.Weekday.astype(float)  
@@ -240,7 +240,7 @@ mytest.TripType = mytest.TripType.astype(float)
 mytest.Weekday = mytest.Weekday.astype(float)  
 mytest.NumItems = mytest.NumItems.astype(float)
 
-mytrain.to_csv("C:/Users/sandh/OneDrive/Documents/R/mytrain.csv");
+mytrain.to_csv("mytrain.csv");
 
 
 #  Model1  RandomForest
