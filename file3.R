@@ -17,8 +17,13 @@ rownames(train_data) <- seq(length=nrow(train_data))
 
 summary(train_data)
 
-train_data <- train_data[,-c(5,7)]
-test_data <- test_data[,-c(4,6)]
+test_data <- test_data[,-c(4)]
+
+#############################VARIANCE#########################################
+
+variance <- sapply(train_data, var)
+variance
+train_data <- train_data[,-c(5)]
 
 ###########################ONE HOT ENCODING###############################################
 
@@ -37,26 +42,26 @@ library(ggplot2)
 ###BAR PLOTS#####
 
 ##Visit Number
-ggplot(train_data, aes(VisitNumber)) +
-  geom_bar(fill = "#0073C2FF")
-
-##Trip Type
-barplot(table(train_data$TripType), las=2)
-
-##Department Description
-barplot(table(train_data$DepartmentDescription), las=2)
-
-#Scan count
-barplot(table(train_data$ScanCount), las=2)
-
-###PIE CHART#####
-library(plotrix)
-table_weekday <- table(train_data$Weekday)
-labels_weekday <- paste(names(table_weekday), "\n", table_weekday, sep="")
-pie3D(table_weekday, labels = labels_weekday, main="Pie Chart of Departments")
-
-neg_rows <- subset(train_data, ScanCount  < 0)
-barplot(table(neg_rows$DepartmentDescription), las=2)
+# ggplot(train_data, aes(VisitNumber)) +
+#   geom_bar(fill = "#0073C2FF")
+# 
+# ##Trip Type
+# barplot(table(train_data$TripType), las=2)
+# 
+# ##Department Description
+# barplot(table(train_data$DepartmentDescription), las=2)
+# 
+# #Scan count
+# barplot(table(train_data$ScanCount), las=2)
+# 
+# ###PIE CHART#####
+# library(plotrix)
+# table_weekday <- table(train_data$Weekday)
+# labels_weekday <- paste(names(table_weekday), "\n", table_weekday, sep="")
+# pie3D(table_weekday, labels = labels_weekday, main="Pie Chart of Departments")
+# 
+# neg_rows <- subset(train_data, ScanCount  < 0)
+# barplot(table(neg_rows$DepartmentDescription), las=2)
 
 #############################DATA SPLITTING#############################################
 
@@ -65,7 +70,7 @@ set.seed(123)
 split = sample.split(train_data$TripType, SplitRatio = 0.80)
 training_set2 = subset(train_data, split == TRUE)
 test_set1 = subset(train_data, split == FALSE)
-test_set2 <- test_set1[,2:5]
+test_set2 <- test_set1[,2:6]
 
 rownames(training_set2) <- seq(length=nrow(training_set2))
 rownames(test_set1) <- seq(length=nrow(test_set1))
@@ -104,7 +109,7 @@ confusionMatrix(cm_xg)
 
 ####################################NAIVE BAYES#########################################
 
-training_set2 <- training_set2[,-c(5,7)]
+#training_set2 <- training_set2[,-c(5,7)]
  
 
 library(e1071)
@@ -119,10 +124,14 @@ cm_nb
 library(caret)
 confusionMatrix(cm_nb)
 
+RMSE <- mean((as.numeric(test_set1[,1])-as.numeric(pred_nb))^2)
+log(RMSE)
 
-##################################LOGISTIC REGRESSION#####################################
+##################################RANDOM FOREST#####################################
 
-##Tapan
+library(kernlab)
+letter_classifier <- ksvm(TripType ~ ., data = training_set2,kernel = "vanilladot")
+letter_classifier
 
 ####################################DECISION TREE#########################################
 
