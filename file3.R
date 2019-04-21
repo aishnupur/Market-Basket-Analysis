@@ -129,9 +129,14 @@ log(RMSE)
 
 ##################################RANDOM FOREST#####################################
 
-library(kernlab)
-letter_classifier <- ksvm(TripType ~ ., data = training_set2,kernel = "vanilladot")
-letter_classifier
+#install.packages('randomForest')
+library(randomForest)
+classifier_rf = randomForest(x = training_set2[,2:6],
+                          y = training_set2$TripType,
+                          ntree = 10,do.trace=1)
+
+y_pred_rf = predict(classifier_rf, newdata = test_set[-3])
+
 
 ####################################DECISION TREE#########################################
 
@@ -164,10 +169,10 @@ library(xgboost)
 #                         num_class = 38)
 # pred_xg = predict(classifier_xg,data.matrix(test_set1[,2:6]))
 
-xgbModel <- xgboost(data = data.matrix(training_set2[,2:5]), 
+xgbModel <- xgboost(data = data.matrix(training_set2[,2:6]), 
                     label = data.matrix(training_set2[,1]),
                     max_depth = 12,
-                    eta = 1, nthread = 8, nrounds = 300,
+                    nthread = 8, nrounds = 500,
                     objective = "multi:softmax",
                     eval_metric = "mlogloss",
                     num_class = 38,
@@ -181,8 +186,6 @@ cm_xg = table(test_set1[,1], predicted.labels_XGB)
 
 library(caret)
 confusionMatrix(cm_xg)
-
-
 
 ###############################################################################
 #install.packages('R6')

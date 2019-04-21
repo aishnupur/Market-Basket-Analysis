@@ -49,7 +49,7 @@ sel <- plot(basket_rules, measure=c("support", "lift"),
             shading = "confidence",
             interactive = TRUE)
 
-subrules2 <- head(sort(basket_rules, by="confidence"))
+subrules2 <- head(sort(basket_rules, by="support"))
 ig <- plot( subrules2, method="graph", control=list(type="items") )
 
 ######################################################################################
