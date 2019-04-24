@@ -1,8 +1,13 @@
 train_data <- read.csv('train.csv')
 test_data <- read.csv('test.csv')
 
-train_data.factor <- factor(train_data$TripType)
+train_data$TripType <- factor(train_data$TripType)
 train_data$TripType <- as.numeric(train_data.factor)
+
+freq <- table(train_data$TripType)
+
+
+#######################################################################################
 train_data$TripType <- train_data$TripType - 1
 train_data$TripType <- factor(train_data$TripType)
 
@@ -27,41 +32,42 @@ train_data <- train_data[,-c(5)]
 
 ###########################ONE HOT ENCODING###############################################
 
-library(mltools)
-library(data.table)
-
-trip_type_1h <- one_hot(as.data.table(train_data$TripType))
-as.data.frame(trip_type_1h)
-
-train_data_1h <- data.frame(train_data[,2:5], trip_type_1h[,1:38])
+# library(mltools)
+# library(data.table)
+# 
+# trip_type_1h <- one_hot(as.data.table(train_data$TripType))
+# as.data.frame(trip_type_1h)
+# 
+# train_data_1h <- data.frame(train_data[,2:5], trip_type_1h[,1:38])
 
 ###########################DATA ANALYSIS###############################################
 
 library(ggplot2)
-
+barplot(train_data, main="Car Distribution", 
+        xlab="Number of Gears")
 ###BAR PLOTS#####
 
-##Visit Number
-# ggplot(train_data, aes(VisitNumber)) +
-#   geom_bar(fill = "#0073C2FF")
-# 
-# ##Trip Type
-# barplot(table(train_data$TripType), las=2)
-# 
-# ##Department Description
-# barplot(table(train_data$DepartmentDescription), las=2)
-# 
-# #Scan count
-# barplot(table(train_data$ScanCount), las=2)
-# 
-# ###PIE CHART#####
-# library(plotrix)
-# table_weekday <- table(train_data$Weekday)
-# labels_weekday <- paste(names(table_weekday), "\n", table_weekday, sep="")
-# pie3D(table_weekday, labels = labels_weekday, main="Pie Chart of Departments")
-# 
-# neg_rows <- subset(train_data, ScanCount  < 0)
-# barplot(table(neg_rows$DepartmentDescription), las=2)
+#Visit Number
+ggplot(train_data, aes(VisitNumber)) +
+  geom_bar(fill = "#0073C2FF")
+
+##Trip Type
+barplot(table(train_data$TripType), las=2)
+
+##Department Description
+barplot(table(train_data$DepartmentDescription), las=2)
+
+#Scan count
+barplot(table(train_data$ScanCount), las=2)
+
+###PIE CHART#####
+library(plotrix)
+table_weekday <- table(train_data$Weekday)
+labels_weekday <- paste(names(table_weekday), "\n", table_weekday, sep="")
+pie3D(table_weekday, labels = labels_weekday, main="Pie Chart of Departments")
+
+neg_rows <- subset(train_data, ScanCount  < 0)
+barplot(table(neg_rows$DepartmentDescription), las=2)
 
 #############################DATA SPLITTING#############################################
 
@@ -88,6 +94,7 @@ test_set1_1h = subset(train_data_1h, split == FALSE)
 rownames(training_set2) <- seq(length=nrow(training_set2))
 rownames(test_set1) <- seq(length=nrow(test_set1))
 rownames(test_set2) <- seq(length=nrow(test_set2))
+
 
 #############################XGBOOST WITH 1 H#############################################
 
@@ -126,30 +133,6 @@ confusionMatrix(cm_nb)
 
 RMSE <- mean((as.numeric(test_set1[,1])-as.numeric(pred_nb))^2)
 log(RMSE)
-
-##################################RANDOM FOREST#####################################
-
-#install.packages('randomForest')
-library(randomForest)
-classifier_rf = randomForest(x = training_set2[,2:6],
-                          y = training_set2$TripType,
-                          ntree = 10,do.trace=1)
-
-y_pred_rf = predict(classifier_rf, newdata = test_set[-3])
-
-
-####################################DECISION TREE#########################################
-
-library(rpart)
-classifier_dt = rpart(formula = TripType~.,
-                      data = training_set2)
-pred_dt = predict(classifier_dt,test_set2)
-cm_dt = table(test_set1[,1], pred_dt)
-cm_dt
-
-#install.packages('caret')
-library(caret)
-confusionMatrix(cm_dt)
 
 ####################################XGBOOST#########################################
 #install.packages("xgboost")
